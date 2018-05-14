@@ -1,88 +1,38 @@
+# Iris+ Indoor localization and navigation
 
+All these steps are performed in Raspberry Pi 2 and Debian
 
-# Iris_Navigate
-
-## MacOS Configuration
-
-**Download Ardupilot**
+Install `python-pip` and `python3-pip` 
 
 ```bash
-$ git clone git://github.com/ArduPilot/ardupilot.git
-$ cd ardupilot
-$ git submodule update --init --recursive
+$ sudo apt-get install python-pip python3-pip
 ```
 
-**Install Homebrew for MacOS**
+ Install `python3-venv` for virtual development environment
 
 ```bash
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ sudo apt-get install python3-venv
 ```
 
-**Install the following packages using brew**
+Creat a virtual development environment for `optitrack` or `pozyx` localization hardware
+
+```Bash
+$ python3 -m venv dev
+$ source dev/bin/actinve
+```
+
+Install python dependences
 
 ```bash
-$ brew tap ardupilot/homebrew-px4
-$ brew update
-$ brew install genromfs
-$ brew install gcc-arm-none-eabi
-$ brew install gawk
-$ brew install cmake ccache 
+$ sudo -H pip install pyserial future
 ```
 
-**Install some required packages for building Ardupilot**
+Install dronekit from source, see 
 
-```bash
-$ sudo -H pip install matplotlib pyserial lxml scipy pexpect pymavlink
+[DroneKit]: https://github.com/dronekit/dronekit-python
+
+```Bash
+$ git clone https://github.com/dronekit/dronekit-python.git
+$ sudo apt-get install libxml2 libxml2-dev libxslt1-dev
 ```
-
-Add the following lines to the end of your `.bash_rc` in your home directory
-
-```bash
-export PATH=$PATH:$HOME/ardupilot/Tools/autotest
-export PATH=/usr/lib/ccache:$PATH
-```
-
-Then reload your `PATH` by using the `source`  command in a terminal
-
-```bash
-$ source .bash_rc
-```
-
-**Install MAVProxy**
-
-```bash
-$ sudo -H pip install wxPython gnureadline billiard numpy pyparsing MAVProxy
-```
-
-**Start SITL simulator**
-
-```bash
-$ cd ardupilot/ArduCopter
-$ sim_vehicle.py -j4 --console --map
-```
-
-**Install APM planner for MacOS**
-
-connect with UDP Link 14551
-
-![](https://github.com/Zoneshi/Iris_Navigate/blob/master/apm.png)
-
-**Install `dronekit` and `dronekit-sitl`** 
-
-```bash
-$ sudo -H pip install dronekit
-$ sudo -H pip install dronekit-sitl
-$ dronekit-sitl copter
-$ python Iris_Goto.py
-```
-
-**Run the navigation code**
-
-```bash
-$ python Iris_Goto.py
-```
-
-# Indoor GPS
-
-## Necesary dependencies
 
