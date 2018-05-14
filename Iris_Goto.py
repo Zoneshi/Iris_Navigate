@@ -48,10 +48,10 @@ def arm_and_takeoff(vehicle, targetAlt = 1):
     """
 
     print("Pre-arm checks")
-    # Don't try to arm until autopilot is ready
-    #while not vehicle.is_armable:
-    #    print(" Waiting for vehicle to initialise...")
-    #    time.sleep(1)
+    #Don't try to arm until autopilot is ready
+    while not vehicle.is_armable:
+       print(" Waiting for vehicle to initialise...")
+       time.sleep(1)
 
     print("Arming motors")
     # Copter should arm in GUIDED mode
@@ -117,40 +117,22 @@ def goto_position_target_local_ned(vehicle,north, east, down):
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
-def get_location_metres(original_location, dNorth, dEast):
-    """
-    Returns a LocationGlobal object containing the latitude/longitude `dNorth` and `dEast` metres from the
-    specified `original_location`. The returned LocationGlobal has the same `alt` value
-    as `original_location`.
-    """
-    earth_radius = 6378137.0 #Radius of "spherical" earth
-    #Coordinate offsets in radians
-    dLat = dNorth/earth_radius
-    dLon = dEast/(earth_radius*math.cos(math.pi*original_location.lat/180))
 
-    #New position in decimal degrees
-    newlat = original_location.lat + (dLat * 180/math.pi)
-    newlon = original_location.lon + (dLon * 180/math.pi)
-    if type(original_location) is dronekit.LocationGlobal:
-        targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location.alt)
-    elif type(original_location) is dronekit.LocationGlobalRelative:
-        targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location.alt)
-    else:
-        raise Exception("Invalid Location object passed")
-
-    return targetlocation;
-
-def goto(vehicle, dNorth, dEast,airspeed = 5):
+def send_ned_velocity(velocity_x, velocity_y, velocity_z, duration):
     """
-    Moves the vehicle to a position dNorth metres North and dEast metres East of the current position.
-    The method takes a function pointer argument with a single `dronekit.lib.LocationGlobal` parameter for
-    the target position. This allows it to be called with different position-setting commands.
+    Move vehicle in direction based on specified velocity vectors.
     """
-    currentLocation = vehicle.location.global_relative_frame
-    targetLocation = get_location_metres(currentLocation, dNorth, dEast)
-    vehicle.airspeed = airspeed
-    goto_position_target_global_int(vehicle,targetLocation)
-    #vehicle.simple_goto(targetLocation)
+    msg = vehicle.message_factory.set_position_target_local_ned_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_LOCAL_NED, # frame
+        0b0000111111000111, # type_mask (only speeds enabled)
+        0, 0, 0, # x, y, z positions (not used)
+        velocity_x, velocity_y, velocity_z, # x, y, z velocity in m/s
+        0, 0, 0, # x, y, z acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+
+    vehicle.send_mavlink(msg)
 
 
 if __name__ == "__main__":
