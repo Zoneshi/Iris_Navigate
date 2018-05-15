@@ -221,7 +221,6 @@ class NatNetClient:
 
 def receiveRigidBodyFrame( id, position, rotation ):
     global mocap_loca
-
     mocap_loca[0] = position[0]
     mocap_loca[1] = position[1]
     mocap_loca[2] = position[2]
@@ -242,9 +241,8 @@ def __commThreadFunction(server_socket):
             print(status)
 
             if status==POSITION_REQUEST :
-                print("POS: X: {pos[0]} Y: {pos[1]} Z: {pos[2]}".format(pos=mocap_loca))
+                print("POS: X: {pos[0]} Y: {pos[2]} Z: {pos[1]}".format(pos=mocap_loca))
                 send_data = Vector3.pack(mocap_loca[0],mocap_loca[1],mocap_loca[2])
-                #print(send_data)
                 connection.sendall(send_data)
     except Exception:
         traceback.format_exc()
