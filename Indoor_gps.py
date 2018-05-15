@@ -92,7 +92,7 @@ def get_location_metres(original_location, pos,yaw):
     newlon = original_location[1] + (dLon * 180/math.pi)
 
     targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location[2]+pos[1])
-    #targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[2])
+    #targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[1])
 
     return targetlocation;
 
