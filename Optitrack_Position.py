@@ -221,25 +221,14 @@ class NatNetClient:
 
 def receiveRigidBodyFrame( id, position, rotation ):
     global mocap_loca
-    global home_origin
-    #print( "Received frame for rigid body", id )
-    #print("Position",position)
+
     mocap_loca[0] = position[0]
     mocap_loca[1] = position[1]
     mocap_loca[2] = position[2]
-    #print("POS: Lat: {pos[0]} Lon: {pos[1]} Alt: {pos[2]}".format(pos=mocap_loca))
 
 
 
-try:
-    os.unlink(server_address)
-except OSError:
-    if os.path.exists(server_address):
-        raise
-server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-print('starting up on %s' % server_address)
-server_socket.bind(server_address)
-server_socket.listen(1)
+
 
 def __commThreadFunction(server_socket):
     global mocap_loca
@@ -260,6 +249,15 @@ def __commThreadFunction(server_socket):
     except Exception:
         traceback.format_exc()
 
+try:
+    os.unlink(server_address)
+except OSError:
+    if os.path.exists(server_address):
+        raise
+server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+print('starting up on %s' % server_address)
+server_socket.bind(server_address)
+server_socket.listen(1)
 #if __name__ == '__main__':
     # This will create a new NatNet client
 communicationThread = Thread(target = __commThreadFunction, args = (server_socket, ))

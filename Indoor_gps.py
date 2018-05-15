@@ -81,10 +81,11 @@ def get_location_metres(original_location, pos,yaw):
 
     earth_radius = 6378137.0 #Radius of "spherical" earth
     #convert the optitrack pos into NED
-
+    dE = pos[1]*math.sin(yaw*math.pi/180)-pos[0]*math.cos(yaw*math.pi/180)
+    dN = pos[1]*math.cos(yaw*math.pi/180)+pos[0]*math.sin(yaw*math.pi/180)
     #Coordinate offsets in radians
-    dLat = pos[0]*100/earth_radius
-    dLon = pos[1]*100/(earth_radius*math.cos(math.pi*original_location[0]/180))
+    dLat = dN*100/earth_radius
+    dLon = dE*100/(earth_radius*math.cos(math.pi*original_location[0]/180))
 
     #New position in decimal degrees
     newlat = original_location[0] + (dLat * 180/math.pi)
