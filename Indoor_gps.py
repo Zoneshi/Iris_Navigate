@@ -77,9 +77,11 @@ def Get_Socket_Connection(server_address):
     return client_sock
 
 
-def get_location_metres(original_location, pos):
+def get_location_metres(original_location, pos,yaw):
 
     earth_radius = 6378137.0 #Radius of "spherical" earth
+    #convert the optitrack pos into NED
+
     #Coordinate offsets in radians
     dLat = pos[0]*100/earth_radius
     dLon = pos[1]*100/(earth_radius*math.cos(math.pi*original_location[0]/180))
@@ -112,6 +114,10 @@ if __name__ == "__main__":
     '''Connect to Position Server'''
     data_socket = Get_Socket_Connection(server_address)
     send_data = struct.pack('<b',POSITION_REQUEST)
+
+    '''Get the initial yaw error'''
+    yaw_constant = Iris.attitude.yaw
+
     while True:
         '''request position information'''
         data_socket.sendall(send_data)
@@ -119,7 +125,7 @@ if __name__ == "__main__":
 
         pos = Vector3.unpack(rec_data[0:12])
 
-        mocap_loca = get_location_metres(home_origin,pos)
+        mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
         print(mocap_loca)
         send_fake_gps(Iris,mocap_loca,mocap_vel)
         #print("POS: Lat: {pos.lat} Lon: {pos.lon} Alt: {pos.alt}".format(pos=mocap_loca))
