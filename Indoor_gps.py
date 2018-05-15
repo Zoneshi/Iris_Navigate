@@ -84,8 +84,8 @@ def get_location_metres(original_location, pos,yaw):
     dE = pos[2]*math.sin(yaw)-pos[0]*math.cos(yaw)
     dN = pos[2]*math.cos(yaw)+pos[0]*math.sin(yaw)
     #Coordinate offsets in radians
-    dLat = dN*100/earth_radius
-    dLon = dE*100/(earth_radius*math.cos(math.pi*original_location[0]/180))
+    dLat = dN/earth_radius
+    dLon = dE/(earth_radius*math.cos(math.pi*original_location[0]/180))
 
     #New position in decimal degrees
     newlat = original_location[0] + (dLat * 180/math.pi)
