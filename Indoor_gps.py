@@ -21,6 +21,7 @@ POSITION_REQUEST = 1
 POSITION_BUFFER_SIZE = 12
 Vector3 = struct.Struct( '<fff' )
 home_origin = [41.698363326621,-86.23395438304738,100] #Notre Dame Stadium
+
 def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     '''
         GPS sensor input message.  This is a raw sensor value sent by the GPS.
@@ -96,38 +97,74 @@ def get_location_metres(original_location, pos,yaw):
 
     return targetlocation;
 
+
+
+def goto_position_target_global_int(vehicle,aLocation):
+    """
+    Send SET_POSITION_TARGET_GLOBAL_INT command to request the vehicle fly to a specified LocationGlobal.
+    """
+    msg = vehicle.message_factory.set_position_target_global_int_encode(
+        0,       # time_boot_ms (not used)
+        0, 0,    # target system, target component
+        mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT, # frame
+        0b0000111111111000, # type_mask (only speeds enabled)
+        aLocation.lat*1e7, # lat_int - X Position in WGS84 frame in 1e7 * meters
+        aLocation.lon*1e7, # lon_int - Y Position in WGS84 frame in 1e7 * meters
+        aLocation.alt, # alt - Altitude in meters in AMSL altitude, not WGS84 if absolute or relative, above terrain if GLOBAL_TERRAIN_ALT_INT
+        0, # X velocity in NED frame in m/s
+        0, # Y velocity in NED frame in m/s
+        0, # Z velocity in NED frame in m/s
+        0, 0, 0, # afx, afy, afz acceleration (not supported yet, ignored in GCS_Mavlink)
+        0, 0)    # yaw, yaw_rate (not supported yet, ignored in GCS_Mavlink)
+    # send command to vehicle
+    vehicle.send_mavlink(msg)
+
+def __fage_gps(Iris,yaw_constant):
+    mocap_vel = [0,0,0]
+
+    '''socket server address'''
+    server_address = './uds_socket'
+
+    '''Connect to local Optitrack position Server'''
+    data_socket = Get_Socket_Connection(server_address)
+    send_data = struct.pack('<b',POSITION_REQUEST)
+
+    while True:
+        '''request position information'''
+        data_socket.sendall(send_data)
+        '''receive position'''
+        rec_data = data_socket.recv(POSITION_BUFFER_SIZE)
+        pos = Vector3.unpack(rec_data[0:12])
+        mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
+        print(mocap_loca)
+        send_fake_gps(Iris,mocap_loca,mocap_vel)
+        time.sleep(0.2)
+
+def __goto_cmd(Iris,yaw_constant):
+
+    while True:
+        pos = input('Input your destinition position x,z,y:')
+        dest_pos = get_location_metres(home_origin,pos,yaw_constant)
+        goto_position_target_global_int(Iris,dest_pos)
+        time.sleep(1)
+
 if __name__ == "__main__":
 
-    server_address = './uds_socket'
     '''For Raspebarry pi'''
     pi_serial = '/dev/ttyAMA0'
 
     '''For Zhongjiao's MacOS'''
     #pi_serial = '/dev/tty.SLAB_USBtoUART'
-
     pi_rate = 57600
-
-    mocap_vel = [0,0,0]
 
     '''Connect to ArduCopter'''
     Iris = dronekit.connect(pi_serial, wait_ready=True, baud=pi_rate)
 
-    '''Connect to Position Server'''
-    data_socket = Get_Socket_Connection(server_address)
-    send_data = struct.pack('<b',POSITION_REQUEST)
-
-    '''Get the initial yaw error'''
+    '''Get the initial yaw angle for reference frame transform'''
     yaw_constant = Iris.attitude.yaw # in rad
 
-    while True:
-        '''request position information'''
-        data_socket.sendall(send_data)
-        rec_data = data_socket.recv(POSITION_BUFFER_SIZE)
+    gpsThread = Thread(target = __fage_gps, args = (Iris,yaw_constant, ))
+    gpsThread.start()
 
-        pos = Vector3.unpack(rec_data[0:12])
-
-        mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
-        print(mocap_loca)
-        send_fake_gps(Iris,mocap_loca,mocap_vel)
-        #print("POS: Lat: {pos.lat} Lon: {pos.lon} Alt: {pos.alt}".format(pos=mocap_loca))
-        time.sleep(0.2)
+    gotoThread = Thread(target = __fage_gps, args = (Iris,yaw_constant, ))
+    gotoThread.start()
