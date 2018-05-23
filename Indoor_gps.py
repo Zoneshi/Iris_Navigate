@@ -48,7 +48,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     '''
     time_usec = 0
     gps_id = 1
-    ignore_flags = 62
+    ignore_flags = 8|16|32|64|128
     secsperweek = 604800
     time_week_ms = int((datetime.now()-datetime(1980,1,6)).total_seconds())#to_gps('now')
     time_week = time_week_ms/secsperweek
@@ -61,10 +61,10 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     vn = mocap_vel[0]
     ve = mocap_vel[0]
     vd = mocap_vel[0]
-    speed_accuracy = 0.1
-    horiz_accuracy = 0.1
-    vert_accuracy = 0.1
-    satellites_visible = 6
+    speed_accuracy = 0
+    horiz_accuracy = 0
+    vert_accuracy = 0
+    satellites_visible = 14
 
     vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,time_week_ms,time_week,fix_type,lat,lon,alt,hdop,vdop,vn,ve,vd,speed_accuracy,horiz_accuracy,vert_accuracy,satellites_visible)
 
@@ -92,8 +92,8 @@ def get_location_metres(original_location, pos,yaw):
     newlat = original_location[0] + (dLat * 180/math.pi)
     newlon = original_location[1] + (dLon * 180/math.pi)
 
-    targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location[2]+pos[1])
-    #targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[1])
+    #targetlocation=dronekit.LocationGlobal(newlat, newlon,original_location[2]+pos[1])
+    targetlocation=dronekit.LocationGlobalRelative(newlat, newlon,original_location[2]+pos[1])
 
     return targetlocation;
 
