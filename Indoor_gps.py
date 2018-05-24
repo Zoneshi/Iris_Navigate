@@ -48,7 +48,7 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     '''
     time_usec = 0
     gps_id = 1
-    ignore_flags = 8|16|32|64|128
+    ignore_flags = 16|32|128
     secsperweek = 604800
     time_week_ms = int((datetime.now()-datetime(1980,1,6)).total_seconds())#to_gps('now')
     time_week = time_week_ms/secsperweek
@@ -56,14 +56,14 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     lat = mocap_loca.lat*1e7
     lon = mocap_loca.lon*1e7
     alt = mocap_loca.alt*1000
-    hdop = 1.0
-    vdop = 1.0
+    hdop = 0.05
+    vdop = 0.05
     vn = mocap_vel[0]
     ve = mocap_vel[1]
     vd = mocap_vel[2]
-    speed_accuracy = 0
-    horiz_accuracy = 0
-    vert_accuracy = 0
+    speed_accuracy = 0.2
+    horiz_accuracy = 0.05
+    vert_accuracy = 0.1
     satellites_visible = 6
 
     vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,time_week_ms,time_week,fix_type,lat,lon,alt,hdop,vdop,vn,ve,vd,speed_accuracy,horiz_accuracy,vert_accuracy,satellites_visible)
@@ -151,7 +151,7 @@ def __fage_gps(Iris,yaw_constant):
 
         mocap_vel = get_ned_vel(pos,last_pos,yaw_constant,time_duation)
         mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
-        
+
         print(mocap_loca)
         send_fake_gps(Iris,mocap_loca,mocap_vel)
         time.sleep(time_duation)
