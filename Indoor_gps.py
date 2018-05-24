@@ -59,12 +59,12 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     hdop = 1.0
     vdop = 1.0
     vn = mocap_vel[0]
-    ve = mocap_vel[0]
-    vd = mocap_vel[0]
+    ve = mocap_vel[1]
+    vd = mocap_vel[2]
     speed_accuracy = 0
     horiz_accuracy = 0
     vert_accuracy = 0
-    satellites_visible = 14
+    satellites_visible = 6
 
     vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,time_week_ms,time_week,fix_type,lat,lon,alt,hdop,vdop,vn,ve,vd,speed_accuracy,horiz_accuracy,vert_accuracy,satellites_visible)
 
@@ -119,9 +119,19 @@ def goto_position_target_global_int(vehicle,aLocation):
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
+def get_ned_vel(pos,last_pos,yaw,ime_duation):
+    vel = [0,0,0]
+    for i in range(0,3):
+        vel[i] = (pos[i]-last_pos[i])/time_duation
+
+    vn = vel[2]*math.cos(yaw)+vel[0]*math.sin(yaw)
+    ve = vel[2]*math.sin(yaw)-vel[0]*math.cos(yaw)
+    vd = -vel[1]
+    return [vn,ve,vd]
+
 def __fage_gps(Iris,yaw_constant):
     mocap_vel = [0,0,0]
-
+    time_duation = 0.2
     '''socket server address'''
     server_address = './uds_socket'
 
@@ -129,16 +139,23 @@ def __fage_gps(Iris,yaw_constant):
     data_socket = Get_Socket_Connection(server_address)
     send_data = struct.pack('<b',POSITION_REQUEST)
 
+    data_socket.sendall(send_data)
+    rec_data = data_socket.recv(POSITION_BUFFER_SIZE)
+    last_pos = Vector3.unpack(rec_data[0:12])
     while True:
         '''request position information'''
         data_socket.sendall(send_data)
         '''receive position'''
         rec_data = data_socket.recv(POSITION_BUFFER_SIZE)
         pos = Vector3.unpack(rec_data[0:12])
+
+        mocap_vel = get_ned_vel(pos,last_pos,yaw_constant,time_duation)
         mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
+        
         print(mocap_loca)
         send_fake_gps(Iris,mocap_loca,mocap_vel)
-        time.sleep(0.2)
+        time.sleep(time_duation)
+        last_pos = pos
 
 def __goto_cmd(Iris,yaw_constant):
 
