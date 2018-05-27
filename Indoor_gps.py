@@ -61,9 +61,9 @@ def send_fake_gps(vehicle,mocap_loca,mocap_vel):
     vn = mocap_vel[0]
     ve = mocap_vel[1]
     vd = mocap_vel[2]
-    speed_accuracy = 0.2
+    speed_accuracy = 0.05
     horiz_accuracy = 0.05
-    vert_accuracy = 0.1
+    vert_accuracy = 0.05
     satellites_visible = 6
 
     vehicle.message_factory.gps_input_send(time_usec,gps_id,ignore_flags,time_week_ms,time_week,fix_type,lat,lon,alt,hdop,vdop,vn,ve,vd,speed_accuracy,horiz_accuracy,vert_accuracy,satellites_visible)
@@ -119,7 +119,7 @@ def goto_position_target_global_int(vehicle,aLocation):
     # send command to vehicle
     vehicle.send_mavlink(msg)
 
-def get_ned_vel(pos,last_pos,yaw,ime_duation):
+def get_ned_vel(pos,last_pos,yaw,time_duation):
     vel = [0,0,0]
     for i in range(0,3):
         vel[i] = (pos[i]-last_pos[i])/time_duation
