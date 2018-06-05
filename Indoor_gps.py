@@ -152,7 +152,7 @@ def __fage_gps(Iris,yaw_constant):
         mocap_vel = get_ned_vel(pos,last_pos,yaw_constant,time_duation)
         mocap_loca = get_location_metres(home_origin,pos,yaw_constant)
 
-        print(mocap_loca)
+        #print(mocap_loca)
         send_fake_gps(Iris,mocap_loca,mocap_vel)
         time.sleep(time_duation)
         last_pos = pos
@@ -183,5 +183,5 @@ if __name__ == "__main__":
     gpsThread = Thread(target = __fage_gps, args = (Iris,yaw_constant, ))
     gpsThread.start()
 
-    gotoThread = Thread(target = __fage_gps, args = (Iris,yaw_constant, ))
+    gotoThread = Thread(target = __goto_cmd, args = (Iris,yaw_constant, ))
     gotoThread.start()
