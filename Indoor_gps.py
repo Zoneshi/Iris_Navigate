@@ -17,6 +17,8 @@ import sys
 import struct
 import math
 from threading import Thread
+from pymavlink import mavutil
+
 POSITION_REQUEST = 1
 POSITION_BUFFER_SIZE = 12
 Vector3 = struct.Struct( '<fff' )
